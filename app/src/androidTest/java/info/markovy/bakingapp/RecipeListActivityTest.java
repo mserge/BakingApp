@@ -33,6 +33,7 @@ import info.markovy.bakingapp.data.Recipe;
 import info.markovy.bakingapp.data.Resource;
 import info.markovy.bakingapp.util.EspressoTestUtil;
 import info.markovy.bakingapp.util.RecyclerViewMatcher;
+import info.markovy.bakingapp.util.TaskExecutorWithIdlingResourceRule;
 import info.markovy.bakingapp.util.TestUtil;
 import info.markovy.bakingapp.viewmodel.RecipeListViewModel;
 
@@ -55,9 +56,9 @@ public class RecipeListActivityTest {
     @Rule
     public ActivityTestRule<RecipeListActivity> activityRule =
             new ActivityTestRule<>(RecipeListActivity.class, true, true);
-//    @Rule
-//    public TaskExecutorWithIdlingResourceRule executorRule =
-//            new TaskExecutorWithIdlingResourceRule();
+    @Rule
+    public TaskExecutorWithIdlingResourceRule executorRule =
+            new TaskExecutorWithIdlingResourceRule();
 
     private RecipeListViewModel viewModel;
 
@@ -75,7 +76,8 @@ public class RecipeListActivityTest {
     public void loadResults() {
         List<Recipe> recipes = TestUtil.createRecipes(10);
         results.postValue(Resource.success(recipes));
-        onView(listMatcher().atPosition(0)).check(matches(hasDescendant(withText("Recipe 0"))));
+        onView(listMatcher().atPosition(0))
+                .check(matches(hasDescendant(withText("Recipe 0"))));
         onView(withId(R.id.recipe_list_error_message)).check(matches(not(isDisplayed())));
     }
 //
