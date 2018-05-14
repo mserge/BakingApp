@@ -18,6 +18,7 @@ package info.markovy.bakingapp;
 
 import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
+import android.support.test.espresso.ViewInteraction;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -51,6 +52,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+// setup for TestUnits explained
+// http://www.davidwong.com.au/blog/2017/08/android-ui-test-mocking-the-viewmodel-with-or-without-dagger/
+// https://medium.com/@hiBrianLee/writing-testable-android-mvvm-app-part-5-6a52c3b2a30e
+
 @RunWith(AndroidJUnit4.class)
 public class RecipeListActivityTest {
     @Rule
@@ -76,7 +81,8 @@ public class RecipeListActivityTest {
     public void loadResults() {
         List<Recipe> recipes = TestUtil.createRecipes(10);
         results.postValue(Resource.success(recipes));
-        onView(listMatcher().atPosition(0))
+        ViewInteraction viewInteraction = onView(listMatcher().atPosition(0));
+        viewInteraction
                 .check(matches(hasDescendant(withText("Recipe 0"))));
         onView(withId(R.id.recipe_list_error_message)).check(matches(not(isDisplayed())));
     }

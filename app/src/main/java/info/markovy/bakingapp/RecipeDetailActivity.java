@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import info.markovy.bakingapp.data.DummyContent;
 
@@ -28,6 +29,7 @@ import java.util.List;
  */
 public class RecipeDetailActivity extends AppCompatActivity {
 
+    public static final String EXTRA_STEP_ID = "info.markovy.bakingapp.EXTRA_STEP_ID";
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -42,6 +44,10 @@ public class RecipeDetailActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
+
+        int stepExtra = getIntent().getIntExtra(EXTRA_STEP_ID, -1);
+        // can be passed from widget
+        Toast.makeText(this, "Called with id " + stepExtra, Toast.LENGTH_LONG).show();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
