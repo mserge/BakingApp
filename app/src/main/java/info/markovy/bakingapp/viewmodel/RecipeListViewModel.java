@@ -18,14 +18,19 @@ public class RecipeListViewModel extends AndroidViewModel {
 
     private MutableLiveData<Integer> mCurrentRecipe = new MutableLiveData<Integer>();
     private LiveData<Resource<List<Recipe>>> mRecipes;
+    private RecipesRepository recipesRepository;
 
     public RecipeListViewModel(@NonNull Application application) {
         super(application);
+        recipesRepository = RecipesRepository.getInstance();
+        recipesRepository.init(application.getApplicationContext());
+
     }
 
     public LiveData<Resource<List<Recipe>>> getRecipes() {
-        if(mRecipes == null)
-             mRecipes = RecipesRepository.getInstance().loadRecipes();
+        if(mRecipes == null) {
+            mRecipes = recipesRepository.loadRecipes();
+        }
         return mRecipes;
     }
 
