@@ -109,8 +109,45 @@ public class RecipesRepository {
             @NonNull
             @Override
             protected LiveData<List<Recipe>> loadFromDb() {
+
                 MutableLiveData<List<Recipe>> listMutableLiveData = new MutableLiveData<>();
-                listMutableLiveData.setValue(mRecipes);
+                appExecutors.diskIO().execute(
+                        () ->{
+                                List<Recipe> joinedList = new ArrayList<>();
+                                List<RecipeEntity> all = getDAO().getAll();
+                                List<StepEntity> allSteps = getDAO().getAllSteps();
+                                List<IngredientEntity> allIngredients = getDAO().getAllIngredients();
+                                if(all != null){
+                                    for(RecipeEntity re : all){
+
+                                        List<Ingredient> ingredients = new ArrayList<>();
+                                        if(allIngredients != null){
+                                            for(IngredientEntity ie: allIngredients ){
+                                                if(ie.recipe_id == re.id){
+                                                    ingredients.add(new Ingredient(ie.quantity, ie.measure, ie.ingredient));
+                                                }
+                                            }
+
+                                        }
+                                        List<Step> steps = new ArrayList<>();
+                                        if(allSteps != null){
+                                            for(StepEntity se: allSteps ){
+                                                if(se.recipe_id == re.id){
+                                                    steps.add(new Step(se.id, se.shortDescription, se.description, se.videoURL, se.thumbnailURL));
+                                                }
+                                            }
+
+                                        }
+                                        // copy
+                                        joinedList.add( new Recipe(re.id, re.name, ingredients, steps, re.servings, re.image));
+                                    }
+                                }
+
+                                listMutableLiveData.postValue(joinedList);
+
+                        }
+                );
+
                 return listMutableLiveData;
             }
 

@@ -26,7 +26,7 @@ public interface RecipesDAO {
 
 
     @Query("SELECT * FROM ingridients")
-    List<IngredientEntity> getAllIngriIngredients();
+    List<IngredientEntity> getAllIngredients();
 
     @Insert(onConflict = REPLACE)
     void insertAll(RecipeEntity... recipes);
