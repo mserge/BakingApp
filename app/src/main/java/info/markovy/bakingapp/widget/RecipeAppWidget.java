@@ -87,6 +87,7 @@ public class RecipeAppWidget extends AppWidgetProvider {
 
     // should be run on another thread with appContext
     static public void invokeUpdate(Context context){
+        Timber.d("Updating widgets");
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context, RecipeAppWidget.class));
         //Trigger data update to handle the GridView widgets and force a data refresh

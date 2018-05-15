@@ -22,8 +22,7 @@ public class RecipeListViewModel extends AndroidViewModel {
 
     public RecipeListViewModel(@NonNull Application application) {
         super(application);
-        recipesRepository = RecipesRepository.getInstance();
-        recipesRepository.init(application.getApplicationContext());
+        recipesRepository = RecipesRepository.init(application.getApplicationContext());
 
     }
 
@@ -36,7 +35,8 @@ public class RecipeListViewModel extends AndroidViewModel {
 
 
     public void setCurrentRecipe(Integer id){
+        recipesRepository.updateSaved(id);
         mCurrentRecipe.setValue(id);
-        RecipeAppWidget.invokeUpdate(getApplication().getApplicationContext());
+
     }
 }

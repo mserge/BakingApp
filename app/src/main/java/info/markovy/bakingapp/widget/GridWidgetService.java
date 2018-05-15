@@ -18,15 +18,18 @@ package info.markovy.bakingapp.widget;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
+import java.util.List;
+
 import info.markovy.bakingapp.R;
 import info.markovy.bakingapp.RecipeDetailActivity;
+import info.markovy.bakingapp.db.IngredientEntity;
+import info.markovy.bakingapp.db.RecipesDAO;
+import info.markovy.bakingapp.repository.RecipesRepository;
+import timber.log.Timber;
 
 public class GridWidgetService extends RemoteViewsService {
     @Override
@@ -37,12 +40,18 @@ public class GridWidgetService extends RemoteViewsService {
 
 class GridRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 
+    private RecipesDAO dao;
     Context mContext;
-
+    List<IngredientEntity> ingredientEntities;
 
     public GridRemoteViewsFactory(Context applicationContext) {
         mContext = applicationContext;
-
+        if(mContext != null) {
+            //create another instance
+            dao =  RecipesRepository.getRoomDAO(mContext);
+            Timber.d("DAO acquired - %s", dao);
+        } else
+            Timber.e("No context given");
     }
 
     @Override
@@ -54,7 +63,11 @@ class GridRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
     @Override
     public void onDataSetChanged() {
         // Get all plant info ordered by creation time
-        // TODO Load from repository
+        if(dao != null){
+            ingredientEntities = dao.getIngridientsSaved();
+        } else {
+            Timber.d("No dao set.");
+        }
     }
 
     @Override
@@ -65,7 +78,13 @@ class GridRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
     @Override
     public int getCount() {
         // TODO get count
-        return 1;
+        if(ingredientEntities != null){
+            Timber.d("retrieved ingridients %d", ingredientEntities.size());
+            return ingredientEntities.size();
+        }
+        else
+            Timber.d("No ingridients set.");
+        return 0;
 
     }
 
@@ -95,7 +114,14 @@ class GridRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 //        // Update the plant image
 //        int imgRes = PlantUtils.getPlantImageRes(mContext, timeNow - createdAt, timeNow - wateredAt, plantType);
 //        views.setImageViewResource(R.id.widget_plant_image, imgRes);
-        views.setTextViewText(R.id.widget_step_name, String.valueOf(position));
+        String ingStr = "No data for ingridient";
+        if(ingredientEntities != null ){
+            IngredientEntity iEnt = ingredientEntities.get(position);
+            if(iEnt != null) ingStr = String.format("%10s - %2.2f %4s",
+                    iEnt.ingredient, iEnt.quantity, iEnt.measure
+            );
+        }
+        views.setTextViewText(R.id.widget_step_name, ingStr);
 //        // Always hide the water drop in GridView mode
 //        views.setViewVisibility(R.id.widget_water_button, View.GONE);
 //

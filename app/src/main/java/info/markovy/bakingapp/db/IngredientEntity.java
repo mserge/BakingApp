@@ -8,7 +8,7 @@ import android.arch.persistence.room.PrimaryKey;
 
 import static android.arch.persistence.room.ForeignKey.CASCADE;
 
-@Entity(tableName = "ingrinients",
+@Entity(tableName = "ingridients",
     foreignKeys = @ForeignKey(entity = RecipeEntity.class, parentColumns = "id", childColumns = "recipe_id",  onDelete =  CASCADE))
 public class IngredientEntity {
     @PrimaryKey(autoGenerate = true)

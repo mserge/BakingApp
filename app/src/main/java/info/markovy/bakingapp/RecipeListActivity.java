@@ -14,10 +14,12 @@ import com.github.vivchar.rendererrecyclerviewadapter.binder.ViewBinder;
 import info.markovy.bakingapp.data.Status;
 import info.markovy.bakingapp.viewmodel.RecipeListViewModel;
 import info.markovy.bakingapp.viewmodel.RecipeViewModel;
+import timber.log.Timber;
 
 public class RecipeListActivity extends AppCompatActivity {
 
     private RendererRecyclerViewAdapter mRecyclerViewAdapter;
+    private RecipeListViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +33,16 @@ public class RecipeListActivity extends AppCompatActivity {
                 (model, finder, payloads) -> finder
                       //  .setBackground(R.id.recipe_card_image, model.getBackground())
                         .setText(R.id.recipe_card_name, model.getName())
+                        .setOnClickListener(new View.OnClickListener(){
+
+                            @Override
+                            public void onClick(View view) {
+                                if(viewModel != null && model != null )
+                                    viewModel.setCurrentRecipe(model.getId());
+                                else
+                                    Timber.e("Some nullable model or view model pasesed");
+                            }
+                        })
 
         ));
         ProgressBar progress = (ProgressBar) findViewById(R.id.recipe_list_progress);
@@ -38,8 +50,8 @@ public class RecipeListActivity extends AppCompatActivity {
         final RecyclerView recyclerView  = findViewById(R.id.recipe_list);
         recyclerView.setAdapter(mRecyclerViewAdapter);
 
-        RecipeListViewModel model = ViewModelProviders.of(this).get(RecipeListViewModel.class);
-        model.getRecipes().observe(this, recipes_resource -> {
+        viewModel = ViewModelProviders.of(this).get(RecipeListViewModel.class);
+        viewModel.getRecipes().observe(this, recipes_resource -> {
             // update UI
             if(recipes_resource.status == Status.LOADING){
                 progress.setVisibility(View.VISIBLE);
