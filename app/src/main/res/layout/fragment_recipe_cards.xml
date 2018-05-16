@@ -4,21 +4,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RecipeListActivity">
+    tools:context=".ui.MainActivity">
 
 
- <ProgressBar
-     android:layout_width="wrap_content"
-     android:layout_height="wrap_content"
-     android:id="@+id/recipe_list_progress"
-     android:visibility="gone"/>
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/recipe_list_progress"
+        android:visibility="gone"/>
 
     <TextView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:id="@+id/recipe_list_error_message"
-    android:textColor="@android:color/holo_red_light"
-    android:visibility="gone"/>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/recipe_list_error_message"
+        android:textColor="@android:color/holo_red_light"
+        android:visibility="gone"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recipe_list"

@@ -9,11 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.RemoteViews;
 
 import info.markovy.bakingapp.R;
-import info.markovy.bakingapp.RecipeDetailActivity;
+import info.markovy.bakingapp.ui.MainActivity;
 import timber.log.Timber;
 
 /**
@@ -46,7 +45,7 @@ public class RecipeAppWidget extends AppWidgetProvider {
         Intent intent = new Intent(context, GridWidgetService.class);
         views.setRemoteAdapter(R.id.widget_grid_view, intent);
         // Set the PlantDetailActivity intent to launch when clicked
-        Intent appIntent = new Intent(context, RecipeDetailActivity.class);
+        Intent appIntent = new Intent(context, MainActivity.class);
         PendingIntent appPendingIntent = PendingIntent.getActivity(context, 0, appIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         views.setPendingIntentTemplate(R.id.widget_grid_view, appPendingIntent);
         // Handle empty gardens

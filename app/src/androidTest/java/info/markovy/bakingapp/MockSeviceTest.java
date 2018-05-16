@@ -34,8 +34,8 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 
         @Rule
-        public ActivityTestRule<RecipeListActivity> mActivityRule =
-                new ActivityTestRule<>(RecipeListActivity.class, true, false);
+        public ActivityTestRule<SingleFragmentActivity> mActivityRule =
+                new ActivityTestRule<>(SingleFragmentActivity.class, true, false);
         private MockWebServer server;
 
         @Before

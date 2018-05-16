@@ -32,6 +32,7 @@ import java.util.List;
 
 import info.markovy.bakingapp.data.Recipe;
 import info.markovy.bakingapp.data.Resource;
+import info.markovy.bakingapp.ui.NavigationController;
 import info.markovy.bakingapp.util.EspressoTestUtil;
 import info.markovy.bakingapp.util.RecyclerViewMatcher;
 import info.markovy.bakingapp.util.TaskExecutorWithIdlingResourceRule;
@@ -57,10 +58,10 @@ import static org.mockito.Mockito.when;
 // https://medium.com/@hiBrianLee/writing-testable-android-mvvm-app-part-5-6a52c3b2a30e
 
 @RunWith(AndroidJUnit4.class)
-public class RecipeListActivityTest {
+public class RecipeListFragmentTest {
     @Rule
-    public ActivityTestRule<RecipeListActivity> activityRule =
-            new ActivityTestRule<>(RecipeListActivity.class, true, true);
+    public ActivityTestRule<SingleFragmentActivity> activityRule =
+            new ActivityTestRule<>(SingleFragmentActivity.class, true, true);
     @Rule
     public TaskExecutorWithIdlingResourceRule executorRule =
             new TaskExecutorWithIdlingResourceRule();
@@ -68,10 +69,13 @@ public class RecipeListActivityTest {
     private RecipeListViewModel viewModel;
 
     private MutableLiveData<Resource<List<Recipe>>> results = new MutableLiveData<>();
+    private NavigationController navigationController;
 
     @Before
     public void init() {
         EspressoTestUtil.disableProgressBarAnimations(activityRule);
+        navigationController = mock(NavigationController.class);
+
         viewModel = mock(RecipeListViewModel.class);
         when(viewModel.getRecipes()).thenReturn(results);
 

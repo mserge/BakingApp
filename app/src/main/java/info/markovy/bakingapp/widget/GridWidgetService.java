@@ -25,7 +25,7 @@ import android.widget.RemoteViewsService;
 import java.util.List;
 
 import info.markovy.bakingapp.R;
-import info.markovy.bakingapp.RecipeDetailActivity;
+import info.markovy.bakingapp.ui.MainActivity;
 import info.markovy.bakingapp.db.IngredientEntity;
 import info.markovy.bakingapp.db.RecipesDAO;
 import info.markovy.bakingapp.repository.RecipesRepository;
@@ -97,23 +97,7 @@ class GridRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
     @Override
     public RemoteViews getViewAt(int position) {
         RemoteViews views = new RemoteViews(mContext.getPackageName(), R.layout.recipe_grid_widget);
-//        if (mCursor == null || mCursor.getCount() == 0) return null;
-//        mCursor.moveToPosition(position);
-//        int idIndex = mCursor.getColumnIndex(PlantContract.PlantEntry._ID);
-//        int createTimeIndex = mCursor.getColumnIndex(PlantContract.PlantEntry.COLUMN_CREATION_TIME);
-//        int waterTimeIndex = mCursor.getColumnIndex(PlantContract.PlantEntry.COLUMN_LAST_WATERED_TIME);
-//        int plantTypeIndex = mCursor.getColumnIndex(PlantContract.PlantEntry.COLUMN_PLANT_TYPE);
-//
-//        long plantId = mCursor.getLong(idIndex);
-//        int plantType = mCursor.getInt(plantTypeIndex);
-//        long createdAt = mCursor.getLong(createTimeIndex);
-//        long wateredAt = mCursor.getLong(waterTimeIndex);
-//        long timeNow = System.currentTimeMillis();
-//
-//
-//        // Update the plant image
-//        int imgRes = PlantUtils.getPlantImageRes(mContext, timeNow - createdAt, timeNow - wateredAt, plantType);
-//        views.setImageViewResource(R.id.widget_plant_image, imgRes);
+        // TODO use ViewModels here
         String ingStr = "No data for ingridient";
         if(ingredientEntities != null ){
             IngredientEntity iEnt = ingredientEntities.get(position);
@@ -122,12 +106,10 @@ class GridRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
             );
         }
         views.setTextViewText(R.id.widget_step_name, ingStr);
-//        // Always hide the water drop in GridView mode
-//        views.setViewVisibility(R.id.widget_water_button, View.GONE);
-//
+
         // Fill in the onClick PendingIntent Template using the specific plant Id for each item individually
         Bundle extras = new Bundle();
-        extras.putInt(RecipeDetailActivity.EXTRA_STEP_ID, position);
+        extras.putInt(MainActivity.EXTRA_STEP_ID, position);
         Intent fillInIntent = new Intent();
         fillInIntent.putExtras(extras);
         views.setOnClickFillInIntent(R.id.widget_step_name, fillInIntent);
