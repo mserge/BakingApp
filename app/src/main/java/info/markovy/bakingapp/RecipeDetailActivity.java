@@ -1,5 +1,6 @@
 package info.markovy.bakingapp;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,11 +13,28 @@ import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import info.markovy.bakingapp.data.DummyContent;
+import com.github.vivchar.rendererrecyclerviewadapter.RendererRecyclerViewAdapter;
+import com.github.vivchar.rendererrecyclerviewadapter.ViewModel;
+import com.github.vivchar.rendererrecyclerviewadapter.binder.ViewBinder;
+import com.github.vivchar.rendererrecyclerviewadapter.binder.ViewFinder;
 
+import info.markovy.bakingapp.data.DummyContent;
+import info.markovy.bakingapp.data.Ingredient;
+import info.markovy.bakingapp.data.Recipe;
+import info.markovy.bakingapp.data.Status;
+import info.markovy.bakingapp.data.Step;
+import info.markovy.bakingapp.viewmodel.CategoryViewModel;
+import info.markovy.bakingapp.viewmodel.IngredientViewModel;
+import info.markovy.bakingapp.viewmodel.RecipeListViewModel;
+import info.markovy.bakingapp.viewmodel.RecipeViewModel;
+import info.markovy.bakingapp.viewmodel.StepViewModel;
+import timber.log.Timber;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,6 +53,8 @@ public class RecipeDetailActivity extends AppCompatActivity {
      * device.
      */
     private boolean mTwoPane;
+    private RendererRecyclerViewAdapter mRecyclerViewAdapter;
+    private RecipeListViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,14 +69,6 @@ public class RecipeDetailActivity extends AppCompatActivity {
         // can be passed from widget
         Toast.makeText(this, "Called with id " + stepExtra, Toast.LENGTH_LONG).show();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         if (findViewById(R.id.recipestep_detail_container) != null) {
             // The detail container view will be present only in the
@@ -66,81 +78,98 @@ public class RecipeDetailActivity extends AppCompatActivity {
             mTwoPane = true;
         }
 
-        View recyclerView = findViewById(R.id.recipestep_list);
-        assert recyclerView != null;
-        setupRecyclerView((RecyclerView) recyclerView);
+        mRecyclerViewAdapter = new RendererRecyclerViewAdapter();
+
+        registerIngridientRenderer();
+        registerStepRenderer();
+
+        final RecyclerView recyclerView  = findViewById(R.id.recipestep_list);
+        recyclerView.setAdapter(mRecyclerViewAdapter);
+
+        viewModel = ViewModelProviders.of(this).get(RecipeListViewModel.class);
+        if(viewModel.getCurrentRecipe() !=null){
+            showRecipe(viewModel.getCurrentRecipe().getValue());
+        }
+        viewModel.getCurrentRecipe().observe(this, recipe -> {
+
+            // update UI
+            showRecipe(recipe);
+
+       });
     }
 
-    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, DummyContent.ITEMS, mTwoPane));
+    private void showRecipe(Recipe recipe) {
+        if(recipe == null) {
+            // close
+            Timber.d("Recipe is null observsed");
+        } else {
+            Timber.d("Load recipe list for  %s", recipe.getName());
+                mRecyclerViewAdapter.setItems(mapFromAllModel(recipe));
+            //
+        }
     }
 
-    public static class SimpleItemRecyclerViewAdapter
-            extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
+    public  List<ViewModel> mapFromAllModel(Recipe recipe) {
+        List<ViewModel> allitems = new ArrayList<>();
+        if(recipe != null){
+            if(recipe.getSteps()!=null){
+                allitems.add(new CategoryViewModel(this.getString(R.string.detail_list_catgory_steps)));
+                for(Step step :recipe.getSteps()){
+                    allitems.add(new StepViewModel(step));
+                }
+            } else {
+                allitems.add(new CategoryViewModel("No steps available"));
 
-        private final RecipeDetailActivity mParentActivity;
-        private final List<DummyContent.DummyItem> mValues;
-        private final boolean mTwoPane;
-        private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                DummyContent.DummyItem item = (DummyContent.DummyItem) view.getTag();
-                if (mTwoPane) {
-                    Bundle arguments = new Bundle();
-                    arguments.putString(RecipeStepDetailFragment.ARG_ITEM_ID, item.id);
-                    RecipeStepDetailFragment fragment = new RecipeStepDetailFragment();
-                    fragment.setArguments(arguments);
-                    mParentActivity.getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.recipestep_detail_container, fragment)
-                            .commit();
-                } else {
-                    Context context = view.getContext();
-                    Intent intent = new Intent(context, RecipeStepDetailActivity.class);
-                    intent.putExtra(RecipeStepDetailFragment.ARG_ITEM_ID, item.id);
-
-                    context.startActivity(intent);
+            }
+            if(recipe.getIngredients()!=null){
+                for(Ingredient ingredient : recipe.getIngredients()){
+                    allitems.add(new IngredientViewModel(ingredient));
                 }
             }
-        };
 
-        SimpleItemRecyclerViewAdapter(RecipeDetailActivity parent,
-                                      List<DummyContent.DummyItem> items,
-                                      boolean twoPane) {
-            mValues = items;
-            mParentActivity = parent;
-            mTwoPane = twoPane;
         }
+        return allitems;
+    }
+    private void registerIngridientRenderer() {
+        mRecyclerViewAdapter.registerRenderer(new ViewBinder<>(
+                R.layout.ingridient_list_item,
+                IngredientViewModel.class,
+                (model, finder, payloads) -> finder
+                        .setText(R.id.ingridient_name, model.getIngredientString())
+                        .setText(R.id.ingridient_quantity_type, model.getQuantityType())
+        ));
+    }
 
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.recipestep_list_content, parent, false);
-            return new ViewHolder(view);
-        }
+    private void registerStepRenderer() {
+        mRecyclerViewAdapter.registerRenderer(new ViewBinder<>(
+                R.layout.step_card,
+                StepViewModel.class,
+                new ViewBinder.Binder<StepViewModel>() {
+                    @Override
+                    public void bindView(@NonNull StepViewModel model, @NonNull ViewFinder finder, @NonNull List<Object> payloads) {
+                        finder
+                                .setText(R.id.step_card_name, model.getStep().getShortDescription())
+                                .setOnClickListener((view) -> RecipeDetailActivity.this.onStepClick(model));
+                    }
+                }
+        ));
+    }
 
-        @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.mIdView.setText(mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).content);
+    private void onStepClick( @NonNull StepViewModel item){
 
-            holder.itemView.setTag(mValues.get(position));
-            holder.itemView.setOnClickListener(mOnClickListener);
-        }
+        // TODO add ViewModel set for Step
+        if (mTwoPane) {
+            Bundle arguments = new Bundle();
+            RecipeStepDetailFragment fragment = new RecipeStepDetailFragment();
+            fragment.setArguments(arguments);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.recipestep_detail_container, fragment)
+                    .commit();
+        } else {
+            Intent intent = new Intent(this, RecipeStepDetailActivity.class);
 
-        @Override
-        public int getItemCount() {
-            return mValues.size();
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder {
-            final TextView mIdView;
-            final TextView mContentView;
-
-            ViewHolder(View view) {
-                super(view);
-                mIdView = (TextView) view.findViewById(R.id.id_text);
-                mContentView = (TextView) view.findViewById(R.id.content);
-            }
+            startActivity(intent);
         }
     }
+
 }

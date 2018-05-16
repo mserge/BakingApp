@@ -6,6 +6,7 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ import info.markovy.bakingapp.widget.RecipeAppWidget;
 
 public class RecipeListViewModel extends AndroidViewModel {
 
-    private MutableLiveData<Integer> mCurrentRecipe = new MutableLiveData<Integer>();
+    private MutableLiveData<Recipe> mCurrentRecipe = new MutableLiveData<Recipe>();
     private LiveData<Resource<List<Recipe>>> mRecipes;
     private RecipesRepository recipesRepository;
 
@@ -34,9 +35,14 @@ public class RecipeListViewModel extends AndroidViewModel {
     }
 
 
-    public void setCurrentRecipe(Integer id){
-        recipesRepository.updateSaved(id);
-        mCurrentRecipe.setValue(id);
+    public void setCurrentRecipe(@Nullable Recipe newRecipe){
+        if(newRecipe != null) {
+            recipesRepository.updateSaved(newRecipe.getId());
+        } // otherwise keep previous one
+        mCurrentRecipe.setValue(newRecipe);
+    }
 
+    public MutableLiveData<Recipe> getCurrentRecipe() {
+        return mCurrentRecipe;
     }
 }

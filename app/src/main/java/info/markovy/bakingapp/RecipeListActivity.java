@@ -1,6 +1,7 @@
 package info.markovy.bakingapp;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
@@ -38,7 +39,7 @@ public class RecipeListActivity extends AppCompatActivity {
                             @Override
                             public void onClick(View view) {
                                 if(viewModel != null && model != null )
-                                    viewModel.setCurrentRecipe(model.getId());
+                                    viewModel.setCurrentRecipe(model.getRecipe());
                                 else
                                     Timber.e("Some nullable model or view model pasesed");
                             }
@@ -67,6 +68,12 @@ public class RecipeListActivity extends AppCompatActivity {
                     mRecyclerViewAdapter.setItems(RecipeViewModel.mapFromModel(recipes_resource.data));
                 }
             }
+        });
+        viewModel.getCurrentRecipe().observe(this, recipe -> {
+            if(recipe != null){
+                startActivity(new Intent(this, RecipeDetailActivity.class));
+            } else
+                Timber.d("Null recipe set, ignoring");
         });
     }
 }

@@ -5,60 +5,53 @@ import com.github.vivchar.rendererrecyclerviewadapter.ViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
+import info.markovy.bakingapp.data.Ingredient;
 import info.markovy.bakingapp.data.Recipe;
+import info.markovy.bakingapp.data.Step;
 
 public class RecipeViewModel implements ViewModel {
-    private Integer id;
-    private String name;
-    private Integer ingredients_num;
-    private Integer steps_num;
-    private Integer servings;
-    private String image;
+    private final Recipe recipe;
 
-    public RecipeViewModel(Integer id, String name, Integer ingredients_num, Integer steps_num, Integer servings, String image) {
-        this.id = id;
-        this.name = name;
-        this.ingredients_num = ingredients_num;
-        this.steps_num = steps_num;
-        this.servings = servings;
-        this.image = image;
+
+    public RecipeViewModel( Recipe recipe) {
+        this.recipe = recipe;
     }
 
     public Integer getId() {
-        return id;
+        return recipe.getId();
+    }
+
+    public Recipe getRecipe() {
+        return recipe;
     }
 
     public String getName() {
-        return name;
+        return recipe.getName();
     }
 
     public Integer getIngredients_num() {
-        return ingredients_num;
+        return  recipe.getIngredients() == null ? 0 : recipe.getIngredients().size();
     }
 
     public Integer getSteps_num() {
-        return steps_num;
+        return recipe.getSteps() == null ? 0 : recipe.getSteps().size();
     }
 
     public Integer getServings() {
-        return servings;
+        return recipe.getServings();
     }
 
     public String getImage() {
-        return image;
+        return recipe.getImage();
     }
 
     // stream().map not available yet
     public static List<RecipeViewModel> mapFromModel(List<Recipe> source){
         List<RecipeViewModel> copy = new ArrayList<>();
         for(Recipe recipe : source){
-            copy.add(new RecipeViewModel(recipe.getId(), recipe.getName(),
-                    recipe.getIngredients() == null ? 0 : recipe.getIngredients().size(),
-                    recipe.getSteps() == null ? 0 : recipe.getSteps().size(),
-                    recipe.getServings(),
-                    recipe.getImage()
-            ));
+            copy.add(new RecipeViewModel(recipe));
         }
         return copy;
     };
+
 }
