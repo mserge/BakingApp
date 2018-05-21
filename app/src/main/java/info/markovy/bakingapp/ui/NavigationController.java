@@ -18,6 +18,8 @@ package info.markovy.bakingapp.ui;
 
 import android.support.v4.app.FragmentManager;
 
+import javax.inject.Inject;
+
 import info.markovy.bakingapp.R;
 
 /**
@@ -27,24 +29,23 @@ public class NavigationController {
     private final int containerId;
     private final int detailContainerId;
     private final FragmentManager fragmentManager;
-    private final boolean mTwoPane;
 
-    public NavigationController(MainActivity mainActivity, boolean mTwoPane) {
+    @Inject
+    public NavigationController(MainActivity mainActivity) {
         this.containerId = R.id.frameLayout;
         this.detailContainerId = R.id.recipestep_detail_container;
-        this.mTwoPane = mTwoPane;
         this.fragmentManager = mainActivity.getSupportFragmentManager();
     }
 
     public void navigateToRecipes() {
-        RecipeCardsFragment recipeCardsFragment = RecipeCardsFragment.newInstance(this);
+        RecipeCardsFragment recipeCardsFragment = RecipeCardsFragment.newInstance();
         fragmentManager.beginTransaction()
                 .replace(containerId, recipeCardsFragment)
                 .commitAllowingStateLoss();
     }
 
     public void navigateToDetail() {
-        RecipeDetailFragment fragment = RecipeDetailFragment.newInstance(this);
+        RecipeDetailFragment fragment = RecipeDetailFragment.newInstance();
         String tag = "detail";
         fragmentManager.beginTransaction()
                 .replace(containerId, fragment, tag)
@@ -54,7 +55,7 @@ public class NavigationController {
 
     public void navigateToStep(String stepId) {
         String tag = "step/" + stepId;
-        RecipeStepDetailFragment stepDetailFragment = RecipeStepDetailFragment.newInstance(this);
+        RecipeStepDetailFragment stepDetailFragment = RecipeStepDetailFragment.newInstance();
         fragmentManager.beginTransaction()
                 .replace(containerId, stepDetailFragment, tag)
                 .addToBackStack(null)

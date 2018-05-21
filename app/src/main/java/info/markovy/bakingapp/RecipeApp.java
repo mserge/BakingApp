@@ -16,13 +16,27 @@
 
 package info.markovy.bakingapp;
 
+import android.app.Activity;
 import android.app.Application;
+import android.app.Service;
 
+import javax.inject.Inject;
+
+import dagger.android.AndroidInjector;
+import dagger.android.DispatchingAndroidInjector;
+import dagger.android.HasActivityInjector;
+import dagger.android.HasServiceInjector;
+import info.markovy.bakingapp.di.AppInjector;
 import timber.log.Timber;
 
 
-public class RecipeApp extends Application  {
+public class RecipeApp extends Application  implements HasActivityInjector, HasServiceInjector {
 
+    @Inject
+    DispatchingAndroidInjector<Activity> dispatchingAndroidInjector;
+
+    @Inject
+    DispatchingAndroidInjector<Service> dispatchingServiceAndroidInjector;
 
     @Override
     public void onCreate() {
@@ -30,8 +44,17 @@ public class RecipeApp extends Application  {
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         }
+        AppInjector.init(this);
 
     }
 
+    @Override
+    public AndroidInjector<Activity> activityInjector() {
+        return dispatchingAndroidInjector;
+    }
 
+    @Override
+    public AndroidInjector<Service> serviceInjector() {
+        return dispatchingServiceAndroidInjector;
+    }
 }

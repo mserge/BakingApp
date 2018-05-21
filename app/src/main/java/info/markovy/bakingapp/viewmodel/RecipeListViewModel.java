@@ -10,21 +10,25 @@ import android.support.annotation.Nullable;
 
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import info.markovy.bakingapp.data.Recipe;
 import info.markovy.bakingapp.data.Resource;
 import info.markovy.bakingapp.repository.RecipesRepository;
 import info.markovy.bakingapp.widget.RecipeAppWidget;
 
+@Singleton
 public class RecipeListViewModel extends AndroidViewModel {
 
     private MutableLiveData<Recipe> mCurrentRecipe = new MutableLiveData<Recipe>();
     private LiveData<Resource<List<Recipe>>> mRecipes;
     private RecipesRepository recipesRepository;
 
-    public RecipeListViewModel(@NonNull Application application) {
+    @Inject
+    public RecipeListViewModel(@NonNull Application application, RecipesRepository recipesRepository) {
         super(application);
-        recipesRepository = RecipesRepository.init(application.getApplicationContext());
-
+        this.recipesRepository = recipesRepository;
     }
 
     public LiveData<Resource<List<Recipe>>> getRecipes() {

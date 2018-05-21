@@ -16,6 +16,7 @@ package info.markovy.bakingapp.widget;
 * limitations under the License.
 */
 
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,6 +25,9 @@ import android.widget.RemoteViewsService;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
+import dagger.android.AndroidInjection;
 import info.markovy.bakingapp.R;
 import info.markovy.bakingapp.ui.MainActivity;
 import info.markovy.bakingapp.db.IngredientEntity;
@@ -32,26 +36,32 @@ import info.markovy.bakingapp.repository.RecipesRepository;
 import timber.log.Timber;
 
 public class GridWidgetService extends RemoteViewsService {
+
+    @Inject RecipesDAO dao;
+
+    @Override
+    public void onCreate() {
+        AndroidInjection.inject(this);
+        super.onCreate();
+    }
+
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
-        return new GridRemoteViewsFactory(this.getApplicationContext());
+        return new GridRemoteViewsFactory(getApplication(), dao);
     }
 }
 
 class GridRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
-
     private RecipesDAO dao;
     Context mContext;
     List<IngredientEntity> ingredientEntities;
 
-    public GridRemoteViewsFactory(Context applicationContext) {
-        mContext = applicationContext;
-        if(mContext != null) {
-            //create another instance
-            dao =  RecipesRepository.getRoomDAO(mContext);
-            Timber.d("DAO acquired - %s", dao);
-        } else
-            Timber.e("No context given");
+    @Inject
+    public GridRemoteViewsFactory(Application application, RecipesDAO dao) {
+        mContext = application.getApplicationContext();
+        this.dao =  dao;
+        Timber.d("DAO acquired - %s", dao);
+
     }
 
     @Override

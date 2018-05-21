@@ -1,14 +1,17 @@
 package info.markovy.bakingapp.repository;
 
+import android.app.Application;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
-import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import info.markovy.bakingapp.AppExecutors;
 import info.markovy.bakingapp.Constants;
@@ -21,7 +24,6 @@ import info.markovy.bakingapp.data.Step;
 import info.markovy.bakingapp.db.IngredientEntity;
 import info.markovy.bakingapp.db.RecipeEntity;
 import info.markovy.bakingapp.db.RecipesDAO;
-import info.markovy.bakingapp.db.RecipesDB;
 import info.markovy.bakingapp.db.SavedRecipeEntity;
 import info.markovy.bakingapp.db.StepEntity;
 import info.markovy.bakingapp.util.LiveDataCallAdapterFactory;
@@ -30,48 +32,30 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import timber.log.Timber;
 
+@Singleton
 public class RecipesRepository {
 
     private static final long TIME_INVALIDATION_MILLIS = 1000 * 60 * 15; // 15 mins
-    private static final Object lock = new Object();
-    private static RecipesRepository mRepository;
-    private static Context mContext;
-    private static RecipesDAO mDAO;
+    private Context mContext;
+    private RecipesDAO mDAO;
     private BakingService bakingService;
     private AppExecutors appExecutors;
+
     private List<Recipe> mRecipes; // cached in memory implementation
+
+    @Inject
+    public RecipesRepository(Application app, RecipesDAO mDAO, BakingService bakingService, AppExecutors appExecutors) {
+        this.mContext = app.getApplicationContext();
+        this.mDAO = mDAO;
+        this.bakingService = bakingService;
+        this.appExecutors = appExecutors;
+    }
+
     private long mLastUpdateMillis;
 
-    public static RecipesRepository getInstance(){
-        synchronized (lock){
-            if(mRepository == null){
-                mRepository = new RecipesRepository();
-            }
-        }
-        return mRepository;
-    }
-
-    public static RecipesDAO getDAO(){
-        synchronized (lock) {
-            if (mDAO == null) {
-                mDAO = getRoomDAO(mContext);
-            }
-        }
-        return mDAO;
-    }
-
-    public static RecipesDAO getRoomDAO(Context context) {
-        RecipesDB db = Room.databaseBuilder(context,
-                RecipesDB.class, "database-name").build();
-        return db.recipesDAO();
-    }
-
-    ;
 
     public LiveData<Resource<List<Recipe>>> loadRecipes() {
-        if(appExecutors == null){
-            appExecutors = AppExecutors.getInstance();
-        }
+
         return new NetworkBoundResource<List<Recipe>, List<Recipe>>(appExecutors) {
             @Override
             protected void saveCallResult(@NonNull List<Recipe> items) {
@@ -95,9 +79,9 @@ public class RecipesRepository {
                         }
                     }
                 }
-                getDAO().insertAll(recipeEntities.toArray(new RecipeEntity[recipeEntities.size()]));
-                getDAO().insertIngridientsAll(ingredientEntities.toArray(new IngredientEntity[ingredientEntities.size()]));
-                getDAO().insertStepsAll(stepEntities.toArray(new StepEntity[stepEntities.size()]));
+                mDAO.insertAll(recipeEntities.toArray(new RecipeEntity[recipeEntities.size()]));
+                mDAO.insertIngridientsAll(ingredientEntities.toArray(new IngredientEntity[ingredientEntities.size()]));
+                mDAO.insertStepsAll(stepEntities.toArray(new StepEntity[stepEntities.size()]));
                 RecipeAppWidget.invokeUpdate(mContext);
             }
 
@@ -111,12 +95,15 @@ public class RecipesRepository {
             protected LiveData<List<Recipe>> loadFromDb() {
 
                 MutableLiveData<List<Recipe>> listMutableLiveData = new MutableLiveData<>();
-                appExecutors.diskIO().execute(
+                if(mRecipes != null && ! cacheIsInvalidated()){
+                    listMutableLiveData.setValue(mRecipes);
+                } else
+                    appExecutors.diskIO().execute(
                         () ->{
                                 List<Recipe> joinedList = new ArrayList<>();
-                                List<RecipeEntity> all = getDAO().getAll();
-                                List<StepEntity> allSteps = getDAO().getAllSteps();
-                                List<IngredientEntity> allIngredients = getDAO().getAllIngredients();
+                                List<RecipeEntity> all = mDAO.getAll();
+                                List<StepEntity> allSteps = mDAO.getAllSteps();
+                                List<IngredientEntity> allIngredients = mDAO.getAllIngredients();
                                 if(all != null){
                                     for(RecipeEntity re : all){
 
@@ -142,7 +129,7 @@ public class RecipesRepository {
                                         joinedList.add( new Recipe(re.id, re.name, ingredients, steps, re.servings, re.image));
                                     }
                                 }
-
+                                mRecipes = joinedList; updateCacheTime();
                                 listMutableLiveData.postValue(joinedList);
 
                         }
@@ -154,13 +141,6 @@ public class RecipesRepository {
             @NonNull
             @Override
             protected LiveData<ApiResponse<List<Recipe>>> createCall() {
-                if(bakingService == null)
-                    bakingService = new Retrofit.Builder()
-                            .baseUrl(Constants.URL)
-                            .addConverterFactory(GsonConverterFactory.create())
-                            .addCallAdapterFactory(new LiveDataCallAdapterFactory())
-                            .build()
-                            .create(BakingService.class);
                 return bakingService.getRecipes();
             }
 
@@ -183,14 +163,9 @@ public class RecipesRepository {
     public void updateSaved(int recipe_id){
         appExecutors.diskIO().execute(() -> {
             Timber.d("Save recipe: %d", recipe_id);
-            getDAO().insertSaved(new SavedRecipeEntity(recipe_id));
+            mDAO.insertSaved(new SavedRecipeEntity(recipe_id));
             RecipeAppWidget.invokeUpdate(mContext);
         });
     }
-    //TODO clean context?
-    public static RecipesRepository init(Context applicationContext) {
-        if(getInstance() != null && mContext == null && applicationContext != null)
-            mContext = applicationContext;
-        return getInstance();
-    }
+
 }

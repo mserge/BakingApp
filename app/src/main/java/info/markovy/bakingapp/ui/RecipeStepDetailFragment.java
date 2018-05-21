@@ -6,12 +6,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import javax.inject.Inject;
+
 import info.markovy.bakingapp.R;
+import info.markovy.bakingapp.di.Injectable;
 
 
-public class RecipeStepDetailFragment extends Fragment {
-
-    public static RecipeStepDetailFragment newInstance(NavigationController navigationController) {
+public class RecipeStepDetailFragment extends Fragment implements Injectable {
+    @Inject
+    NavigationController navigationController;
+    public static RecipeStepDetailFragment newInstance() {
         RecipeStepDetailFragment recipeStepDetailFragment = new RecipeStepDetailFragment();
         return recipeStepDetailFragment;
     }

@@ -1,16 +1,24 @@
 package info.markovy.bakingapp.ui;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
+import javax.inject.Inject;
+
+import dagger.android.DispatchingAndroidInjector;
+import dagger.android.support.HasSupportFragmentInjector;
 import info.markovy.bakingapp.R;
 
 
 // Main Activity
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity implements HasSupportFragmentInjector {
+    @Inject
+    DispatchingAndroidInjector<Fragment> dispatchingAndroidInjector;
+    @Inject
+    NavigationController navigationController;
     public static final String EXTRA_STEP_ID = "info.markovy.bakingapp.EXTRA_STEP_ID";
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -40,7 +48,13 @@ public class MainActivity extends AppCompatActivity {
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
-        new NavigationController(this, mTwoPane).navigateToRecipes();
+        if(savedInstanceState == null)
+         navigationController.navigateToRecipes();
+    }
+
+    @Override
+    public DispatchingAndroidInjector<Fragment> supportFragmentInjector() {
+        return dispatchingAndroidInjector;
     }
 
 }

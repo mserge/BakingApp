@@ -1,5 +1,6 @@
 package info.markovy.bakingapp.ui;
 
+import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -15,23 +16,31 @@ import android.widget.TextView;
 import com.github.vivchar.rendererrecyclerviewadapter.RendererRecyclerViewAdapter;
 import com.github.vivchar.rendererrecyclerviewadapter.binder.ViewBinder;
 
+import javax.inject.Inject;
+
 import info.markovy.bakingapp.R;
 import info.markovy.bakingapp.data.Status;
+import info.markovy.bakingapp.di.Injectable;
 import info.markovy.bakingapp.viewmodel.RecipeListViewModel;
 import info.markovy.bakingapp.viewmodel.RecipeViewModel;
+import info.markovy.bakingapp.viewmodel.RecipeViewModelFactory;
 import timber.log.Timber;
 
 
 
-public class RecipeCardsFragment extends Fragment {
+public class RecipeCardsFragment extends Fragment implements Injectable{
     private RendererRecyclerViewAdapter mRecyclerViewAdapter;
+    @Inject
+    ViewModelProvider.Factory viewModelFactory;
+
     private RecipeListViewModel viewModel;
-    private NavigationController navigationController;
+
+    @Inject
+    NavigationController navigationController;
 
 
-    public static RecipeCardsFragment newInstance(NavigationController navigationController) {
+    public static RecipeCardsFragment newInstance() {
         RecipeCardsFragment recipeCardsFragment = new RecipeCardsFragment();
-        recipeCardsFragment.navigationController = navigationController;
         return recipeCardsFragment;
     }
 
@@ -40,12 +49,18 @@ public class RecipeCardsFragment extends Fragment {
         super.onCreate(savedInstanceState);
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_recipe_cards, container, false);
         mRecyclerViewAdapter = new RendererRecyclerViewAdapter();
+        viewModel = ViewModelProviders.of(this, viewModelFactory).get(RecipeListViewModel.class);
 
         mRecyclerViewAdapter.registerRenderer(new ViewBinder<>(
                 R.layout.recipe_card,
@@ -70,7 +85,6 @@ public class RecipeCardsFragment extends Fragment {
         final RecyclerView recyclerView  = view.findViewById(R.id.recipe_list);
         recyclerView.setAdapter(mRecyclerViewAdapter);
 
-        viewModel = ViewModelProviders.of(getActivity()).get(RecipeListViewModel.class);
         viewModel.getRecipes().observe(this, recipes_resource -> {
             // update UI
             if(recipes_resource.status == Status.LOADING){
@@ -78,8 +92,10 @@ public class RecipeCardsFragment extends Fragment {
                 tv_error_message.setVisibility(View.GONE);
             } else if(recipes_resource.status == Status.ERROR){
                 progress.setVisibility(View.GONE);
-                if(recipes_resource.message != null)
+                if(recipes_resource.message != null){
                     tv_error_message.setText(recipes_resource.message);
+                    tv_error_message.setVisibility(View.VISIBLE);
+                }
             }else {
                 progress.setVisibility(View.GONE);
                 tv_error_message.setVisibility(View.GONE);

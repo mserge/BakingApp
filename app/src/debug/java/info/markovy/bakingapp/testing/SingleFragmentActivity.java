@@ -1,4 +1,4 @@
-/*
+package info.markovy.bakingapp.testing;/*
  * Copyright (C) 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package info.markovy.bakingapp;
-
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
+import info.markovy.bakingapp.R;
 
 /**
  * Used for testing fragments inside a fake activity.

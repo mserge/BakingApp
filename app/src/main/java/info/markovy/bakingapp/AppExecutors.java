@@ -23,6 +23,9 @@ import android.support.annotation.NonNull;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 
 /**
  * Global executor pools for the whole application.
@@ -30,10 +33,9 @@ import java.util.concurrent.Executors;
  * Grouping tasks like this avoids the effects of task starvation (e.g. disk reads don't wait behind
  * webservice requests).
  */
-// TODO replace @Singleton
+@Singleton
 public class AppExecutors {
 
-    private static AppExecutors mExecutors;
     private final Executor diskIO;
 
     private final Executor networkIO;
@@ -46,18 +48,12 @@ public class AppExecutors {
         this.mainThread = mainThread;
     }
 
-//  TODO  replace  @Inject
+    @Inject
     public AppExecutors() {
         this(Executors.newSingleThreadExecutor(), Executors.newFixedThreadPool(3),
                 new MainThreadExecutor());
     }
 
-    public static AppExecutors getInstance(){
-        if(mExecutors == null){
-            mExecutors = new AppExecutors();
-        }
-        return mExecutors;
-    };
 
     public Executor diskIO() {
         return diskIO;

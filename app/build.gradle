@@ -28,7 +28,7 @@ android {
         targetSdkVersion build_versions.target_sdk
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "info.markovy.bakingapp.util.RecipeTestRunner"
     }
     buildTypes {
         debug {
@@ -74,16 +74,16 @@ dependencies {
 
     implementation 'com.github.vivchar:RendererRecyclerViewAdapter:2.5.1'
 
-//    implementation deps.dagger.runtime
-//    implementation deps.dagger.android
-//    implementation deps.dagger.android_support
+    implementation deps.dagger.runtime
+    implementation deps.dagger.android
+    implementation deps.dagger.android_support
     implementation deps.constraint_layout
 
     implementation deps.timber
 
-//    annotationProcessor deps.dagger.android_support_compiler
-//    annotationProcessor deps.dagger.compiler
-    implementation 'com.android.support:support-v4:26.1.0'
+    annotationProcessor deps.dagger.android_support_compiler
+    annotationProcessor deps.dagger.compiler
+    implementation 'com.android.support:support-v4:27.1.0'
     annotationProcessor deps.room.compiler
     annotationProcessor deps.lifecycle.compiler
 

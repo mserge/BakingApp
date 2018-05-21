@@ -1,5 +1,6 @@
 package info.markovy.bakingapp.ui;
 
+import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -8,7 +9,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.github.vivchar.rendererrecyclerviewadapter.RendererRecyclerViewAdapter;
 import com.github.vivchar.rendererrecyclerviewadapter.ViewModel;
@@ -18,10 +18,13 @@ import com.github.vivchar.rendererrecyclerviewadapter.binder.ViewFinder;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import info.markovy.bakingapp.R;
 import info.markovy.bakingapp.data.Ingredient;
 import info.markovy.bakingapp.data.Recipe;
 import info.markovy.bakingapp.data.Step;
+import info.markovy.bakingapp.di.Injectable;
 import info.markovy.bakingapp.viewmodel.CategoryViewModel;
 import info.markovy.bakingapp.viewmodel.IngredientViewModel;
 import info.markovy.bakingapp.viewmodel.RecipeListViewModel;
@@ -29,28 +32,29 @@ import info.markovy.bakingapp.viewmodel.StepViewModel;
 import timber.log.Timber;
 
 
-public class RecipeDetailFragment extends Fragment {
+public class RecipeDetailFragment extends Fragment implements Injectable{
 
 
     private RendererRecyclerViewAdapter mRecyclerViewAdapter;
+    @Inject
+    ViewModelProvider.Factory viewModelFactory;
     private RecipeListViewModel viewModel;
-    private NavigationController navigationController;
+    @Inject
+     NavigationController navigationController;
 
 
     public RecipeDetailFragment() {
         // Required empty public constructor
     }
 
-    public static RecipeDetailFragment newInstance(NavigationController navigationController) {
+    public static RecipeDetailFragment newInstance() {
         RecipeDetailFragment fragment = new RecipeDetailFragment();
-        fragment.navigationController = navigationController;
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -59,6 +63,7 @@ public class RecipeDetailFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_recipe_steplist, container, false);
 
         mRecyclerViewAdapter = new RendererRecyclerViewAdapter();
+        viewModel = ViewModelProviders.of(this, viewModelFactory).get(RecipeListViewModel.class);
 
         registerIngridientRenderer();
         registerStepRenderer();
@@ -67,12 +72,10 @@ public class RecipeDetailFragment extends Fragment {
         final RecyclerView recyclerView  = view.findViewById(R.id.recipestep_list);
         recyclerView.setAdapter(mRecyclerViewAdapter);
 
-        viewModel = ViewModelProviders.of(getActivity()).get(RecipeListViewModel.class);
         if(viewModel.getCurrentRecipe() !=null){
             showRecipe(viewModel.getCurrentRecipe().getValue());
         }
         viewModel.getCurrentRecipe().observe(this, recipe -> {
-
             // update UI
             showRecipe(recipe);
 
@@ -107,7 +110,6 @@ public class RecipeDetailFragment extends Fragment {
                         "No Ingridients"
                 ));
             }
-
 
             if(recipe.getSteps()!=null){
                 allitems.add(new CategoryViewModel(this.getString(R.string.detail_list_catgory_steps)));
