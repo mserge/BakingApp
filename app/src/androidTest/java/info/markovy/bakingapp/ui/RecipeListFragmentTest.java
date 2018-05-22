@@ -58,6 +58,7 @@ import static org.mockito.Mockito.when;
 // setup for E2E TestUnits explained
 // http://www.davidwong.com.au/blog/2017/08/android-ui-test-mocking-the-viewmodel-with-or-without-dagger/
 // https://medium.com/@hiBrianLee/writing-testable-android-mvvm-app-part-5-6a52c3b2a30e
+// TODO http://www.davidwong.com.au/blog/2017/10/android-ui-test-mocking-the-viewmodel-with-or-without-dagger-part-2/
 
 @RunWith(AndroidJUnit4.class)
 public class RecipeListFragmentTest {
