@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity implements HasSupportFragmen
     DispatchingAndroidInjector<Fragment> dispatchingAndroidInjector;
     @Inject
     NavigationController navigationController;
-    public static final String EXTRA_STEP_ID = "info.markovy.bakingapp.EXTRA_STEP_ID";
+    public static final String EXTRA_RECIPE_ID = "info.markovy.bakingapp.EXTRA_RECIPE_ID";
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -27,30 +27,33 @@ public class MainActivity extends AppCompatActivity implements HasSupportFragmen
     private boolean mTwoPane;
      @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_recipestep_list);
+         super.onCreate(savedInstanceState);
+         setContentView(R.layout.activity_recipestep_list);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
+         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+         setSupportActionBar(toolbar);
+         toolbar.setTitle(getTitle());
 
-        // handling call from widget
-        int stepExtra = getIntent().getIntExtra(EXTRA_STEP_ID, -1);
+         // handling call from widget
+         int recipeExtra = getIntent().getIntExtra(EXTRA_RECIPE_ID, -1);
 
-        // can be passed from widget
-        Toast.makeText(this, "Called with id " + stepExtra, Toast.LENGTH_LONG).show();
+         // can be passed from widget
+         Toast.makeText(this, "Called with id " + recipeExtra, Toast.LENGTH_LONG).show();
 
 
-        if (findViewById(R.id.recipestep_detail_container) != null) {
-            // The detail container view will be present only in the
-            // large-screen layouts (res/values-w900dp).
-            // If this view is present, then the
-            // activity should be in two-pane mode.
-            mTwoPane = true;
-        }
-        if(savedInstanceState == null)
-         navigationController.navigateToRecipes();
-    }
+         if (findViewById(R.id.recipestep_detail_container) != null) {
+             // The detail container view will be present only in the
+             // large-screen layouts (res/values-w900dp).
+             // If this view is present, then the
+             // activity should be in two-pane mode.
+             mTwoPane = true;
+         }
+         if (savedInstanceState == null) {
+             navigationController.navigateToRecipes();
+             if (recipeExtra != -1)
+                 navigationController.navigateToDetail(recipeExtra);
+         }
+     }
 
     @Override
     public DispatchingAndroidInjector<Fragment> supportFragmentInjector() {

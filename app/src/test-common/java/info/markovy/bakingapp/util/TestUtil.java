@@ -29,8 +29,8 @@ public class TestUtil {
         for(int i = 0; i < count; i ++) {
             recipes.add(new Recipe(i,
                             "Recipe " + i,
-                            createIngridients(i),
-                            createSteps(i),
+                            createIngridients(i+1),
+                            createSteps(i+1),
                             i,
                             null));
         }
@@ -57,7 +57,6 @@ public class TestUtil {
                     "Ingridient  " + count + " " + i));
         }
         return ingridients;
-
     }
 //
 //    public static User createUser(String login) {

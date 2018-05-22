@@ -32,7 +32,6 @@ import info.markovy.bakingapp.R;
 import info.markovy.bakingapp.ui.MainActivity;
 import info.markovy.bakingapp.db.IngredientEntity;
 import info.markovy.bakingapp.db.RecipesDAO;
-import info.markovy.bakingapp.repository.RecipesRepository;
 import timber.log.Timber;
 
 public class GridWidgetService extends RemoteViewsService {
@@ -109,20 +108,24 @@ class GridRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         RemoteViews views = new RemoteViews(mContext.getPackageName(), R.layout.recipe_grid_widget);
         // TODO use ViewModels here
         String ingStr = "No data for ingridient";
+        int recipe_id = -1;
         if(ingredientEntities != null ){
             IngredientEntity iEnt = ingredientEntities.get(position);
-            if(iEnt != null) ingStr = String.format("%10s - %2.2f %4s",
+            if(iEnt != null) ingStr = String.format("%s - %2.2f %4s",
                     iEnt.ingredient, iEnt.quantity, iEnt.measure
             );
+            recipe_id = iEnt.recipe_id;
         }
         views.setTextViewText(R.id.widget_step_name, ingStr);
 
-        // Fill in the onClick PendingIntent Template using the specific plant Id for each item individually
-        Bundle extras = new Bundle();
-        extras.putInt(MainActivity.EXTRA_STEP_ID, position);
-        Intent fillInIntent = new Intent();
-        fillInIntent.putExtras(extras);
-        views.setOnClickFillInIntent(R.id.widget_step_name, fillInIntent);
+        if(recipe_id>=0) {
+            // Fill in the onClick PendingIntent Template using the specific plant Id for each item individually
+            Bundle extras = new Bundle();
+            extras.putInt(MainActivity.EXTRA_RECIPE_ID, recipe_id); // position not passed
+            Intent fillInIntent = new Intent();
+            fillInIntent.putExtras(extras);
+            views.setOnClickFillInIntent(R.id.widget_step_name, fillInIntent);
+        }
 
         return views;
 

@@ -44,8 +44,8 @@ public class NavigationController {
                 .commitAllowingStateLoss();
     }
 
-    public void navigateToDetail() {
-        RecipeDetailFragment fragment = RecipeDetailFragment.newInstance();
+    public void navigateToDetail(Integer id) {
+        RecipeDetailFragment fragment = RecipeDetailFragment.newInstance(id);
         String tag = "detail";
         fragmentManager.beginTransaction()
                 .replace(containerId, fragment, tag)
@@ -53,9 +53,9 @@ public class NavigationController {
                 .commitAllowingStateLoss();
     }
 
-    public void navigateToStep(String stepId) {
-        String tag = "step/" + stepId;
-        RecipeStepDetailFragment stepDetailFragment = RecipeStepDetailFragment.newInstance();
+    public void navigateToStep(Integer stepIdx) {
+        String tag = "step/" + stepIdx;
+        RecipeStepDetailFragment stepDetailFragment = RecipeStepDetailFragment.newInstance(stepIdx);
         fragmentManager.beginTransaction()
                 .replace(containerId, stepDetailFragment, tag)
                 .addToBackStack(null)

@@ -72,8 +72,10 @@ public class RecipeCardsFragment extends Fragment implements Injectable{
 
                             @Override
                             public void onClick(View view) {
-                                if(viewModel != null && model != null )
-                                    viewModel.setCurrentRecipe(model.getRecipe());
+                                if(viewModel != null && model != null ){
+                                    navigationController.navigateToDetail(model.getRecipe().getId());
+
+                                }
                                 else
                                     Timber.e("Some nullable model or view model pasesed");
                             }
@@ -104,12 +106,7 @@ public class RecipeCardsFragment extends Fragment implements Injectable{
                 }
             }
         });
-        viewModel.getCurrentRecipe().observe(this, recipe -> {
-            if(recipe != null){
-                navigationController.navigateToDetail();
-            } else
-                Timber.d("Null recipe set, ignoring");
-        });
+
         return  view;
     }
 

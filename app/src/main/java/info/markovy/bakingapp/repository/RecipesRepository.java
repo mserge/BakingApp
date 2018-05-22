@@ -3,6 +3,7 @@ package info.markovy.bakingapp.repository;
 import android.app.Application;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.Transformations;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -168,4 +169,21 @@ public class RecipesRepository {
         });
     }
 
+    // later it can use REST approach
+    public LiveData<Resource<Recipe>> getRecipeById(Integer id) {
+        return Transformations.map(loadRecipes(), resource ->
+                new Resource<Recipe>(resource.status,
+                        resource.data != null && resource.data.size() != 0 ?
+                        getFirstRecipeById(resource.data, id) : null,
+                        resource.message));
+    }
+
+    private Recipe getFirstRecipeById(@NonNull List<Recipe> recipes, Integer id) {
+        for (Recipe recipe: recipes){
+            if(recipe.getId().equals(id))
+                return recipe;
+        }
+
+        return null;
+    }
 }

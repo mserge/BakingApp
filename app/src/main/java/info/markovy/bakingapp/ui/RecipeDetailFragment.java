@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import info.markovy.bakingapp.R;
 import info.markovy.bakingapp.data.Ingredient;
 import info.markovy.bakingapp.data.Recipe;
+import info.markovy.bakingapp.data.Resource;
 import info.markovy.bakingapp.data.Step;
 import info.markovy.bakingapp.di.Injectable;
 import info.markovy.bakingapp.viewmodel.CategoryViewModel;
@@ -34,6 +35,8 @@ import timber.log.Timber;
 
 public class RecipeDetailFragment extends Fragment implements Injectable{
 
+
+    private static final String RECIPE_ID = "info.markovy.bakingapp.ui.RECIPE_ID";
 
     private RendererRecyclerViewAdapter mRecyclerViewAdapter;
     @Inject
@@ -47,8 +50,11 @@ public class RecipeDetailFragment extends Fragment implements Injectable{
         // Required empty public constructor
     }
 
-    public static RecipeDetailFragment newInstance() {
+    public static RecipeDetailFragment newInstance(Integer recipeId) {
         RecipeDetailFragment fragment = new RecipeDetailFragment();
+        Bundle args = new Bundle();
+        args.putInt(RECIPE_ID, recipeId);
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -64,7 +70,10 @@ public class RecipeDetailFragment extends Fragment implements Injectable{
 
         mRecyclerViewAdapter = new RendererRecyclerViewAdapter();
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(RecipeListViewModel.class);
-
+        Bundle args = getArguments();
+        if (args != null && args.containsKey(RECIPE_ID)) {
+            viewModel.setCurrentRecipe(args.getInt(RECIPE_ID));
+        }
         registerIngridientRenderer();
         registerStepRenderer();
         registerCategoryRenderer();
@@ -83,11 +92,16 @@ public class RecipeDetailFragment extends Fragment implements Injectable{
         return view;
     }
 
-    private void showRecipe(Recipe recipe) {
-        if(recipe == null) {
+    private void showRecipe(Resource<Recipe> recipeResource) {
+        if(recipeResource == null) {
             // close
             Timber.d("Recipe is null observsed");
         } else {
+            // TODO logic to loader and error
+            Recipe recipe = recipeResource.data;
+            if(recipe == null)
+                return;
+
             Timber.d("Load recipe list for  %s", recipe.getName());
             mRecyclerViewAdapter.setItems(mapFromAllModel(recipe));
             //
@@ -113,8 +127,10 @@ public class RecipeDetailFragment extends Fragment implements Injectable{
 
             if(recipe.getSteps()!=null){
                 allitems.add(new CategoryViewModel(this.getString(R.string.detail_list_catgory_steps)));
+                int idx = 0;
                 for(Step step :recipe.getSteps()){
-                    allitems.add(new StepViewModel(step));
+                    allitems.add(new StepViewModel(step, idx));
+                    idx++;
                 }
             } else {
                 allitems.add(new CategoryViewModel("No steps available"));
@@ -164,7 +180,7 @@ public class RecipeDetailFragment extends Fragment implements Injectable{
         ));
     }
     private void onStepClick( @NonNull StepViewModel item){
-        navigationController.navigateToStep(item.getStep().getId().toString());
+        navigationController.navigateToStep(item.getIdx());
         //TODO implment model setup
 
     }

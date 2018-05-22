@@ -27,7 +27,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
-import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 
 import java.util.List;
@@ -62,7 +61,7 @@ import static org.mockito.Mockito.when;
 // TODO http://www.davidwong.com.au/blog/2017/10/android-ui-test-mocking-the-viewmodel-with-or-without-dagger-part-2/
 
 @RunWith(AndroidJUnit4.class)
-public class RecipeListFragmentTest {
+public class RecipeDetailFragmentTest {
     @Rule
     public ActivityTestRule<SingleFragmentActivity> activityRule =
             new ActivityTestRule<>(SingleFragmentActivity.class, true, true);
@@ -81,13 +80,13 @@ public class RecipeListFragmentTest {
     @Before
     public void init() {
         EspressoTestUtil.disableProgressBarAnimations(activityRule);
-        RecipeCardsFragment fragment = new RecipeCardsFragment();
 
         viewModel = mock(RecipeListViewModel.class);
         when(viewModel.getRecipes()).thenReturn(results);
         when(viewModel.getCurrentRecipe()).thenReturn(recipe);
 
         navigationController = mock(NavigationController.class);
+        RecipeDetailFragment fragment = RecipeDetailFragment.newInstance(0);
 
         fragment.viewModelFactory = ViewModelUtil.createFor(viewModel);
         fragment.navigationController = navigationController;
@@ -98,37 +97,38 @@ public class RecipeListFragmentTest {
     public void loadResults() {
         List<Recipe> recipes = TestUtil.createRecipes(10);
         results.postValue(Resource.success(recipes));
-        ViewInteraction viewInteraction = onView(listMatcher().atPosition(0));
+        recipe.postValue(Resource.success(recipes.get(0)));
+        ViewInteraction viewInteraction = onView(listMatcher().atPosition(1));
         viewInteraction
-                .check(matches(hasDescendant(withText("Recipe 0"))));
-        onView(ViewMatchers.withId(R.id.recipe_list_error_message)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.recipe_list_progress)).check(matches(not(isDisplayed())));
+                .check(matches(hasDescendant(withText("Ingridient  " + 1 + " " + 0))));
+//        onView(ViewMatchers.withId(R.id.recipe_list_error_message)).check(matches(not(isDisplayed())));
+//        onView(withId(R.id.recipe_list_progress)).check(matches(not(isDisplayed())));
     }
-
-    @Test
-    public void dataWithLoading() {
-        List<Recipe> recipes = TestUtil.createRecipes(10);
-        results.postValue(Resource.loading(recipes));
-        onView(withId(R.id.recipe_list_progress)).check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void error() {
-        results.postValue(Resource.error("failed to load", null));
-        onView(withId(R.id.recipe_list_error_message)).check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void navigateToRecipe() throws Throwable {
-        List<Recipe> recipes = TestUtil.createRecipes(10);
-        results.postValue(Resource.success(recipes));
-        onView(withText("Recipe 0")).perform(click());
-        verify(viewModel).setCurrentRecipe(recipes.get(0).getId());
-    }
+//
+//    @Test
+//    public void dataWithLoading() {
+//        List<Recipe> recipes = TestUtil.createRecipes(10);
+//        results.postValue(Resource.loading(recipes));
+//        onView(withId(R.id.recipe_list_progress)).check(matches(isDisplayed()));
+//    }
+//
+//    @Test
+//    public void error() {
+//        results.postValue(Resource.error("failed to load", null));
+//        onView(withId(R.id.recipe_list_error_message)).check(matches(isDisplayed()));
+//    }
+//
+//    @Test
+//    public void navigateToRecipe() throws Throwable {
+//        List<Recipe> recipes = TestUtil.createRecipes(10);
+//        results.postValue(Resource.success(recipes));
+//        onView(withText("Recipe 0")).perform(click());
+//        verify(viewModel).setCurrentRecipe(recipes.get(0).getId());
+//    }
 
 
     @NonNull
     private RecyclerViewMatcher listMatcher() {
-        return new RecyclerViewMatcher(R.id.recipe_list);
+        return new RecyclerViewMatcher(R.id.recipestep_list);
     }
 }
