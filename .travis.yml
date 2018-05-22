@@ -1,42 +1,37 @@
 language: android
 jdk: oraclejdk8
 sudo: false
-
 android:
   components:
-    - platform-tools
-    - tools
-    - build-tools-27.0.3
-    - android-22
-    - android-24
-    - sys-img-armeabi-v7a-android-22
-    - extra-android-m2repository
-        - build-tools-26.0.2
-              - android-26
-
+  - platform-tools
+  - tools
+  - build-tools-27.0.3
+  - android-22
+  - android-24
+  - sys-img-armeabi-v7a-android-22
+  - extra-android-m2repository - build-tools-26.0.2 - android-26
 before_install:
-  - yes | sdkmanager "platforms;android-26"
-  - chmod +x gradlew
-
-
+- yes | sdkmanager "platforms;android-26"
+- chmod +x gradlew
 before_script:
-  # Create and start emulator
-  - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
-  - emulator -avd test -no-skin -no-audio -no-window &
-  - android-wait-for-emulator
-  - adb shell input keyevent 82 &
-script: ./gradlew connectedAndroidTest
-#
-# TODO lint.xml
-# TODO fix warning
-# TODO add caches
+- echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
+- emulator -avd test -no-skin -no-audio -no-window &
+- android-wait-for-emulator
+- adb shell input keyevent 82 &
+script: "./gradlew connectedAndroidTest"
 before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
-    - $HOME/.android/build-cache
-
-#script: ./gradlew build
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
+  - "$HOME/.android/build-cache"
+deploy:
+  provider: gcs
+  access_key_id: GOOGVLHMYNVPZD5VQM5SRWBU
+  secret_access_key:
+    secure: GxzbBbzXan5NwjYW+L+sEIAO8TtxB8v5f4cNjQ1Bkr0NZ/MN40vQAnbY7MQZK8g4P88Y7Lj2BRzRxyUUn3MzaD0BaaFNEWgMybsgqWSdgDr74RRkStQoM5XnQKDuEJQLg2HRgqoXXFIjWa607t19bNUGN5bOOE61/Tpzh9iCh7jEvDi3v9L7v9TrfTA+iwWrCN6YcfBlSilVicRrUwTbQaxbkhdZvv/WP4Trybbyz7yQ1QOLFJmV1N1vSLSKxwHiCoxlkv3M+L9blxfMB1F/IFX5zQmnSC0GKgPVCGo/M5z/G40pZWnCvw7D1q8KfXaJvDPHeB2TTjWPlBR4pA7T8ixyIlTBWgQANHiWxzPcB1SNXyOeaRR9GYz/sPxMOjxHp69BQSu7B37g61DkxZFasITJBWnGipHBZMuyNO+uPUTryIFeLgSUNTuMooVN1qy11ZgbLHOtZfKCsUhINjuJbjYnW5kO44KgLozKlqX9WTYpVw9EXHUOuLsGjXK7XOkh8LiWV47eGOALNFWQ9cCyKUuymdupcohrMJswyMDPSeUvpJUnXcWH/riDbC/uaG7uGy7up3FuBl4BaPWfHr1tiJxJ1tYEicsMg5Qp7DmHlBFt9FE96Yw9beomo8a41BZzo/mremIpYiu4Zag9Dmyxwst4O4eZXbPD+zXqAyQ6RvI=
+  bucket: gs://bakingapp-1ca1e.appspot.com
+  on:
+    repo: mserge/BakingApp
