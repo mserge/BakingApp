@@ -15,7 +15,8 @@
         android:layout_width="wrap_content" />
     <ImageView android:id = "@+id/recipe_card_image"
         android:layout_height="match_parent"
-        android:layout_width="match_parent" />
+        android:layout_width="match_parent"
+        android:contentDescription="Recipe image" />
 
     <TextView android:id = "@+id/recipe_card_details"
             android:layout_height="wrap_content"
