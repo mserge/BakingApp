@@ -123,7 +123,7 @@ public class RecipeListFragmentTest {
         List<Recipe> recipes = TestUtil.createRecipes(10);
         results.postValue(Resource.success(recipes));
         onView(withText("Recipe 0")).perform(click());
-        verify(viewModel).setCurrentRecipe(recipes.get(0).getId());
+        verify(navigationController).navigateToDetail(recipes.get(0).getId());
     }
 
 
