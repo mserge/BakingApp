@@ -74,6 +74,19 @@ public class RecipeListViewModel extends AndroidViewModel {
         mCurrentStepIdx.setValue(currentStep);
     }
 
+    public void nextStep(){
+        if(mCurrentStepIdx!= null && mCurrentStepIdx.getValue() != null){
+            int newStepIdx = mCurrentStepIdx.getValue() + 1;
+            try{ // INexOutOfBound
+            if(getStepByIdx(newStepIdx) != null && getStepByIdx(newStepIdx).data != null){
+                setCurrentStep(newStepIdx);
+            }
+            } catch (Exception ex){
+                setCurrentStep(0);
+            }
+        }
+    }
+
     public LiveData<Resource<Step>> getCurrentStep() {
         return mStep;
     }

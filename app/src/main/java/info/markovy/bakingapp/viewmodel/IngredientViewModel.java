@@ -19,6 +19,6 @@ public class IngredientViewModel implements ViewModel{
     }
 
     public String getQuantityType(){
-        return String.format("%2f.2 %s", ingredient.getQuantity(), ingredient.getMeasure());
+        return String.format("%3.2f %s", ingredient.getQuantity(), ingredient.getMeasure());
     }
 }

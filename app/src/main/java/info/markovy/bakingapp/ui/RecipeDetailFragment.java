@@ -4,16 +4,20 @@ import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.github.vivchar.rendererrecyclerviewadapter.RendererRecyclerViewAdapter;
 import com.github.vivchar.rendererrecyclerviewadapter.ViewModel;
 import com.github.vivchar.rendererrecyclerviewadapter.binder.ViewBinder;
 import com.github.vivchar.rendererrecyclerviewadapter.binder.ViewFinder;
+import com.github.vivchar.rendererrecyclerviewadapter.binder.ViewProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,16 +68,27 @@ public class RecipeDetailFragment extends Fragment implements Injectable{
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_recipe_steplist, container, false);
-
-        mRecyclerViewAdapter = new RendererRecyclerViewAdapter();
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(RecipeListViewModel.class);
         Bundle args = getArguments();
         if (args != null && args.containsKey(RECIPE_ID)) {
             viewModel.setCurrentRecipe(args.getInt(RECIPE_ID));
         }
+        viewModel.getCurrentRecipe().removeObservers(this);
+        viewModel.getCurrentRecipe().observe(this, recipe -> {
+            // update UI
+            showRecipe(recipe);
+        });
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_recipe_steplist, container, false);
+
+        mRecyclerViewAdapter = new RendererRecyclerViewAdapter();
+
         registerIngridientRenderer();
         registerStepRenderer();
         registerCategoryRenderer();
@@ -81,14 +96,10 @@ public class RecipeDetailFragment extends Fragment implements Injectable{
         final RecyclerView recyclerView  = view.findViewById(R.id.recipestep_list);
         recyclerView.setAdapter(mRecyclerViewAdapter);
 
-        if(viewModel.getCurrentRecipe() !=null){
-            showRecipe(viewModel.getCurrentRecipe().getValue());
-        }
-        viewModel.getCurrentRecipe().observe(this, recipe -> {
-            // update UI
-            showRecipe(recipe);
+//        if(viewModel.getCurrentRecipe() !=null){
+//            showRecipe(viewModel.getCurrentRecipe().getValue());
+//        }
 
-        });
         return view;
     }
 
@@ -105,6 +116,8 @@ public class RecipeDetailFragment extends Fragment implements Injectable{
             Timber.d("Load recipe list for  %s", recipe.getName());
             mRecyclerViewAdapter.setItems(mapFromAllModel(recipe));
             //
+            getActivity().setTitle("Recipe " + recipe.getName());
+
         }
     }
 
@@ -159,6 +172,9 @@ public class RecipeDetailFragment extends Fragment implements Injectable{
                     @Override
                     public void bindView(@NonNull StepViewModel model, @NonNull ViewFinder finder, @NonNull List<Object> payloads) {
                         finder
+                                .find(R.id.step_card_image, (ViewProvider<ImageView>) imageView -> {
+                                    Glide.with(getContext()).load(model.getStep().getThumbnailURL()).into(imageView);
+                                })
                                 .setText(R.id.step_card_name, model.getStep().getShortDescription())
                                 .setOnClickListener((view) -> onStepClick(model));
                     }

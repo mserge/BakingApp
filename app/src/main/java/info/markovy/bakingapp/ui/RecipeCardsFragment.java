@@ -10,11 +10,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.github.vivchar.rendererrecyclerviewadapter.RendererRecyclerViewAdapter;
 import com.github.vivchar.rendererrecyclerviewadapter.binder.ViewBinder;
+import com.github.vivchar.rendererrecyclerviewadapter.binder.ViewProvider;
 
 import javax.inject.Inject;
 
@@ -67,7 +70,14 @@ public class RecipeCardsFragment extends Fragment implements Injectable{
                 RecipeViewModel.class,
                 (model, finder, payloads) -> finder
                         //  .setBackground(R.id.recipe_card_image, model.getBackground())
+                        .find(R.id.recipe_card_image, (ViewProvider<ImageView>) imageView -> {
+                            Glide.with(getContext()).load(model.getImage()).into(imageView);
+                        })
                         .setText(R.id.recipe_card_name, model.getName())
+                        // TODO String extarpolation
+                        .setText(R.id.recipe_card_details, "Ingridients: " + model.getIngredients_num() + ", " + "Steps: " + model.getSteps_num())
+                        .setText(R.id.recipe_subtitle_text, "For " + model.getServings() + " servings.")
+
                         .setOnClickListener(new View.OnClickListener(){
 
                             @Override
@@ -104,6 +114,7 @@ public class RecipeCardsFragment extends Fragment implements Injectable{
                 if(recipes_resource.data != null){
                     mRecyclerViewAdapter.setItems(RecipeViewModel.mapFromModel(recipes_resource.data));
                 }
+                getActivity().setTitle(getActivity().getTitle());
             }
         });
 

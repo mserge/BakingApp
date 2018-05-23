@@ -1,5 +1,7 @@
 This project created as part of Udacity Advanced Android Course for Android Nanodegree
 
+[![Build Status](https://travis-ci.org/mserge/BakingApp.svg?branch=master)](https://travis-ci.org/mserge/BakingApp)
+
 Following sources of information:
 - 
 * Github Browser from Android Arch (https://github.com/googlesamples/android-architecture-components/blob/master/GithubBrowserSample)

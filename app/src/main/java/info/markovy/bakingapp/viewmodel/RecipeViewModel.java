@@ -5,6 +5,8 @@ import com.github.vivchar.rendererrecyclerviewadapter.ViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
+import info.markovy.bakingapp.BuildConfig;
+import info.markovy.bakingapp.Constants;
 import info.markovy.bakingapp.data.Ingredient;
 import info.markovy.bakingapp.data.Recipe;
 import info.markovy.bakingapp.data.Step;
@@ -42,7 +44,8 @@ public class RecipeViewModel implements ViewModel {
     }
 
     public String getImage() {
-        return recipe.getImage();
+        return BuildConfig.DEBUG ? Constants.THUMBNAIL_URL : recipe.getImage();
+//        return recipe.getImage();
     }
 
     // stream().map not available yet
