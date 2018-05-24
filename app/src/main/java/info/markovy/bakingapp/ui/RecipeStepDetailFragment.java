@@ -260,7 +260,21 @@ public class RecipeStepDetailFragment extends Fragment implements Injectable, Pl
         Timber.d("Got error in player");
         Timber.e(error);
         tv_error_message.setVisibility(View.VISIBLE);
-        tv_error_message.setText("Error playing: " + error.getMessage());
+        String error_message = error.getMessage();
+        switch (error.type) {
+            case ExoPlaybackException.TYPE_SOURCE:
+                error_message =  "TYPE_SOURCE: " + error.getSourceException().getMessage();
+                break;
+
+            case ExoPlaybackException.TYPE_RENDERER:
+                error_message =  "TYPE_RENDERER: " + error.getRendererException().getMessage();
+                break;
+
+            case ExoPlaybackException.TYPE_UNEXPECTED:
+                error_message =  "TYPE_UNEXPECTED: " + error.getUnexpectedException().getMessage();
+                break;
+        }
+        tv_error_message.setText("Error playing: " + error_message);
     }
 
     @Override
