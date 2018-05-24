@@ -291,4 +291,12 @@ public class RecipeStepDetailFragment extends Fragment implements Injectable, Pl
     public void onSeekProcessed() {
 
     }
+
+    public void navigateToStep(Integer stepIdx) {
+        Bundle args = new Bundle();
+        args.putInt(STEP_IDX, stepIdx);
+        this.setArguments(args);
+        if(viewModel!=null)
+            viewModel.setCurrentStep(args.getInt(STEP_IDX));
+    }
 }

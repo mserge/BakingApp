@@ -20,6 +20,11 @@ public class MainActivity extends AppCompatActivity implements HasSupportFragmen
     @Inject
     NavigationController navigationController;
     public static final String EXTRA_RECIPE_ID = "info.markovy.bakingapp.EXTRA_RECIPE_ID";
+
+    public boolean isTwoPane() {
+        return mTwoPane;
+    }
+
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -38,8 +43,7 @@ public class MainActivity extends AppCompatActivity implements HasSupportFragmen
          int recipeExtra = getIntent().getIntExtra(EXTRA_RECIPE_ID, -1);
 
          // can be passed from widget
-         Toast.makeText(this, "Called with id " + recipeExtra, Toast.LENGTH_LONG).show();
-
+//         Toast.makeText(this, "Called with id " + recipeExtra, Toast.LENGTH_LONG).show();
 
          if (findViewById(R.id.recipestep_detail_container) != null) {
              // The detail container view will be present only in the
@@ -47,7 +51,10 @@ public class MainActivity extends AppCompatActivity implements HasSupportFragmen
              // If this view is present, then the
              // activity should be in two-pane mode.
              mTwoPane = true;
-         }
+         } else
+             mTwoPane = false;
+         navigationController.setTwoPane(mTwoPane);
+         // as after rotate we may not have no detail frame
          if (savedInstanceState == null) {
              navigationController.navigateToRecipes();
              if (recipeExtra != -1)

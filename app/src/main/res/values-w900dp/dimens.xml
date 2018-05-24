@@ -11,5 +11,5 @@ http://developer.android.com/guide/topics/appwidgets/index.html#CreatingLayout
     -->
     <dimen name="widget_margin">8dp</dimen>
 
-    <integer name="recipes_columns">1</integer>
+    <integer name="recipes_columns">3</integer>
 </resources>
