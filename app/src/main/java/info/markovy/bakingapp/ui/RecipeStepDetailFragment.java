@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -50,6 +52,7 @@ import static com.google.android.exoplayer2.ExoPlayer.STATE_READY;
 
 public class RecipeStepDetailFragment extends Fragment implements Injectable, Player.EventListener {
     private static final String STEP_IDX = "info.markovy.bakingapp.ui.STEP_IDX";
+    private static final String SAVED_POSITION = "info.markovy.bakingapp.ui.SAVED_POSITION";
     @Inject
     NavigationController navigationController;
 
@@ -62,6 +65,7 @@ public class RecipeStepDetailFragment extends Fragment implements Injectable, Pl
     private ImageView mImageView;
     private ProgressBar progress;
     private TextView tv_error_message;
+    private long mSavedPosition;
 
     public static RecipeStepDetailFragment newInstance(int StepIdx) {
         RecipeStepDetailFragment recipeStepDetailFragment = new RecipeStepDetailFragment();
@@ -87,7 +91,11 @@ public class RecipeStepDetailFragment extends Fragment implements Injectable, Pl
 
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(RecipeListViewModel.class);
         Bundle args = getArguments();
-        if (args != null && args.containsKey(STEP_IDX)) {
+        mSavedPosition = C.TIME_UNSET;
+        if(savedInstanceState != null ){
+            mSavedPosition = savedInstanceState.getLong(SAVED_POSITION, C.TIME_UNSET);
+
+        } else  if (args != null && args.containsKey(STEP_IDX)) {
             viewModel.setCurrentStep(args.getInt(STEP_IDX));
         }
         tvDetail = rootView.findViewById(R.id.recipestep_detail);
@@ -135,7 +143,7 @@ public class RecipeStepDetailFragment extends Fragment implements Injectable, Pl
                     tvDetail.setText(step.getDescription());
                     // ?
                     getActivity().setTitle("Step " + step.getShortDescription());
-
+                    // hack to replace empty video thumbs for testing
                     if(BuildConfig.DEBUG && step.getShortDescription().contains("Recipe Introduction"))
                         step.setThumbnailURL(Constants.THUMBNAIL_URL);
 
@@ -179,10 +187,22 @@ public class RecipeStepDetailFragment extends Fragment implements Injectable, Pl
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(
                     context, userAgent), new DefaultExtractorsFactory(), null, null);
             mExoPlayer.prepare(mediaSource);
+            if(mSavedPosition != C.TIME_UNSET) {
+                mExoPlayer.seekTo(mSavedPosition);
+                mSavedPosition = C.TIME_UNSET;
+            }
             mExoPlayer.setPlayWhenReady(true);
 
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(mExoPlayer != null){
+            long currentPosition = mExoPlayer.getCurrentPosition();
+            outState.putLong(SAVED_POSITION, currentPosition);
+        }
+    }
 
     /**
      * Release ExoPlayer.
