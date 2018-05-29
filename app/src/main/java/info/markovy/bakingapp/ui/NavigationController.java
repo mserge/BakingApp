@@ -32,7 +32,7 @@ import timber.log.Timber;
 public class NavigationController {
     private static final String RECIPES_TAG = "RECIPES_TAG";
     private static final String STEP_TAG = "STEP_TAG";
-    private static final String DETAIL_TAG = "DETAIL_TAG";
+    public static final String DETAIL_TAG = "DETAIL_TAG";
     private static final String BACKSTACK_DETAIL = "BACKSTACK_DETAIL";
     private final int containerId;
     private final int detailContainerId;

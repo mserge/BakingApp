@@ -53,6 +53,7 @@ import static com.google.android.exoplayer2.ExoPlayer.STATE_READY;
 public class RecipeStepDetailFragment extends Fragment implements Injectable, Player.EventListener {
     private static final String STEP_IDX = "info.markovy.bakingapp.ui.STEP_IDX";
     private static final String SAVED_POSITION = "info.markovy.bakingapp.ui.SAVED_POSITION";
+    private static final String PLAY_WHEN_READY = "PLAY_WHEN_READY";
     @Inject
     NavigationController navigationController;
 
@@ -66,6 +67,7 @@ public class RecipeStepDetailFragment extends Fragment implements Injectable, Pl
     private ProgressBar progress;
     private TextView tv_error_message;
     private long mSavedPosition;
+    private Boolean mPlayWhenReady= null;
 
     public static RecipeStepDetailFragment newInstance(int StepIdx) {
         RecipeStepDetailFragment recipeStepDetailFragment = new RecipeStepDetailFragment();
@@ -94,7 +96,7 @@ public class RecipeStepDetailFragment extends Fragment implements Injectable, Pl
         mSavedPosition = C.TIME_UNSET;
         if(savedInstanceState != null ){
             mSavedPosition = savedInstanceState.getLong(SAVED_POSITION, C.TIME_UNSET);
-
+            mPlayWhenReady = savedInstanceState.getBoolean(PLAY_WHEN_READY, true);
         } else  if (args != null && args.containsKey(STEP_IDX)) {
             viewModel.setCurrentStep(args.getInt(STEP_IDX));
         }
@@ -188,10 +190,17 @@ public class RecipeStepDetailFragment extends Fragment implements Injectable, Pl
                     context, userAgent), new DefaultExtractorsFactory(), null, null);
             mExoPlayer.prepare(mediaSource);
             if(mSavedPosition != C.TIME_UNSET) {
+                Timber.d("Position set to %d", mSavedPosition);
                 mExoPlayer.seekTo(mSavedPosition);
                 mSavedPosition = C.TIME_UNSET;
             }
-            mExoPlayer.setPlayWhenReady(true);
+            boolean playwhenReady = true;
+            if(mPlayWhenReady != null){ // not saved
+                Timber.d("Set status to %b", mPlayWhenReady);
+                playwhenReady = mPlayWhenReady;
+                mPlayWhenReady = null;
+            }
+            mExoPlayer.setPlayWhenReady(playwhenReady);
 
     }
 
@@ -201,6 +210,12 @@ public class RecipeStepDetailFragment extends Fragment implements Injectable, Pl
         if(mExoPlayer != null){
             long currentPosition = mExoPlayer.getCurrentPosition();
             outState.putLong(SAVED_POSITION, currentPosition);
+            boolean playWhenReady = mExoPlayer.getPlayWhenReady();
+            outState.putBoolean(PLAY_WHEN_READY, playWhenReady);
+
+        } else { // for case when we have onStop saved and cleared
+           if(mSavedPosition != C.TIME_UNSET) outState.putLong(SAVED_POSITION, mSavedPosition);
+           if(mPlayWhenReady != null)outState.putBoolean(PLAY_WHEN_READY, mPlayWhenReady);
         }
     }
 
@@ -208,17 +223,42 @@ public class RecipeStepDetailFragment extends Fragment implements Injectable, Pl
      * Release ExoPlayer.
      */
     private void releasePlayer() {
-        mExoPlayer.stop();
-        mExoPlayer.release();
-        mExoPlayer = null;
+        if(mExoPlayer != null) {
+            mExoPlayer.removeListener(this);
+            mPlayerView.setPlayer(null);
+            mExoPlayer.stop();
+            mExoPlayer.release();
+            mExoPlayer = null;
+
+        }
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(mExoPlayer!=null){
+            // save when no recreation happens
+            mSavedPosition = mExoPlayer.getCurrentPosition();
+            mPlayWhenReady = mExoPlayer.getPlayWhenReady();
+        }
+        if (Util.SDK_INT <= 23) {
+            releasePlayer();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (Util.SDK_INT > 23) {
+            releasePlayer();
+        }
+    }
     @Override
     public void onDestroy() {
         //  (4): When the activity is destroyed, set the MediaSession to inactive.
         super.onDestroy();
-        releasePlayer();
     }
+
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
 
@@ -236,11 +276,13 @@ public class RecipeStepDetailFragment extends Fragment implements Injectable, Pl
 
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+
         if(playbackState == STATE_READY && playWhenReady ){
             mImageView.setVisibility(View.GONE);
             Timber.d( "We're playing!");
         } else if(playbackState == STATE_READY ){
-           Timber.d( "We're paused! at position %d", mExoPlayer.getCurrentPosition());
+            mImageView.setVisibility(View.GONE);
+            Timber.d( "We're paused! at position %d", mExoPlayer.getCurrentPosition());
         }
 
     }
